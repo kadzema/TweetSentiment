@@ -5,6 +5,8 @@ import json
 import requests as req 
 import datetime
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt 
 import os
 import numpy as np
