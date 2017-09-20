@@ -56,6 +56,8 @@ def AnalyzeSentiment(target_user, requester):
 
     # create a list to hold the values
     sentiments = []
+    # remove previous values
+    del sentiments[:]
 
      # loop through 5 times to get 100 tweets
     try:
@@ -111,8 +113,12 @@ def AnalyzeSentiment(target_user, requester):
     plt.savefig(pltName, bbox_inches="tight", dpit=300)
 
     # plt.show()
-    # close the plot so a new clean one will be created
+    # close the plot
     plt.close()
+    # clear the axis so inverting wil not re-invert!
+    plt.cla()
+    # clear the figure
+    plt.clf()
 
     #tweet out the graph
     TweetOut(target_user, avgSentiment)
