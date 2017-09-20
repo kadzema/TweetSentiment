@@ -151,6 +151,7 @@ def TweetIn(lastTweet):
         # check the text for the action:
         tweet_text = tweet["text"]
         if ("@kadzema analyze: @" in tweet_text.lower()) and len(tweet_text.split()) == 3:
+            print("Tweet ID requesting analysis: " + str(tweet["id"]))
 
             # parse out the account to analyze
             tweetSplit = tweet_text.split()
@@ -166,12 +167,12 @@ def TweetIn(lastTweet):
                 print("Calling AnalyzeSentiment for " + account)
                 AnalyzeSentiment(account, tweet_author)
                 lastTweet = tweet["id"]
-            # else:
-            #     try:
-            #         fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-            #         api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
-            #     except:
-            #         print("update status error - probably duplicate")
+            else:
+                # try:
+                #     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
+                #     api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
+                # except:
+                print("file found for " + account)
 
     return lastTweet
 
