@@ -81,7 +81,7 @@ def AnalyzeSentiment(target_user, requester):
 
     tweetsAgo = np.arange(len(sentiments))
 
-    plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5)
+    plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="blue")
     plt.ylim(-1,1)
 
     plt.style.use('bmh')
