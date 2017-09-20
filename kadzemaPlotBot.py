@@ -83,10 +83,13 @@ def AnalyzeSentiment(target_user, requester):
 
     tweetsAgo = np.arange(len(sentiments))
 
+    # set the style before plotting
+    plt.style.use('bmh')
+
     plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5)
     plt.ylim(-1,1)
 
-    plt.style.use('bmh')
+
 
     # invert the x axis so we see oldest tweets first
     plt.gca().invert_xaxis()
@@ -140,7 +143,7 @@ def TweetIn(lastTweet):
     
     public_tweets = api.search(q, count=10, result_type="recent", since_id=lastTweet)
 
-    # print("checking tweets...")
+    print("checking tweets since " + str(lastTweet) + "...")
 
     # Loop through all public_tweets
     for tweet in public_tweets["statuses"]:
@@ -163,12 +166,12 @@ def TweetIn(lastTweet):
                 print("Calling AnalyzeSentiment for " + account)
                 AnalyzeSentiment(account, tweet_author)
                 lastTweet = tweet["id"]
-            else:
-                try:
-                    fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-                    api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
-                except:
-                    print("update status error - probably duplicate")
+            # else:
+            #     try:
+            #         fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
+            #         api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
+            #     except:
+            #         print("update status error - probably duplicate")
 
     return lastTweet
 
@@ -184,7 +187,11 @@ while(True):
     # look for last person who tweeted a request to me for an analysis
     # capture the lastTweet number in the main code so it is retained
     
+    print("lastTweet before call: " + str(lastTweet))
+
     lastTweet = TweetIn(lastTweet)
+
+    print("lastTweet after call: " + str(lastTweet))
 
     # # Once tweeted, wait 5 minutes before doing anything else
     time.sleep(300)
