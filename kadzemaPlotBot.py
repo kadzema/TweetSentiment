@@ -125,7 +125,7 @@ def AnalyzeSentiment(target_user, requester):
 
                 
 # create a function that looks for specific mention
-def TweetIn():
+def TweetIn(lastTweet):
 
     # Setup Tweepy API Authentication
     try:
@@ -137,7 +137,7 @@ def TweetIn():
 
     # look for tweets to me
     q = "@kadzema"
-    lastTweet = 0
+    
     public_tweets = api.search(q, count=10, result_type="recent", since_id=lastTweet)
 
     # print("checking tweets...")
@@ -156,7 +156,7 @@ def TweetIn():
             tweet_author = "@" + tweet["user"]["screen_name"]
             # print("Requested by " + tweet_author)
 
-            #check that we haven't already analyzed this account
+            #check that we haven't already analyzed this account by looking for the file
             pltName = account.replace("@","") + ".png"
 
             if not os.path.isfile(pltName):
@@ -168,15 +168,23 @@ def TweetIn():
                     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
                     api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
                 except:
-                    print("update status error")
+                    print("update status error - probably duplicate")
+
+    return lastTweet
+
+            
 
 ##############################################################################################################################
+
+lastTweet = 0
 
 # Infinitely loop
 while(True):
 
     # look for last person who tweeted a request to me for an analysis
-    TweetIn()
+    # capture the lastTweet number in the main code so it is retained
+    
+    lastTweet = TweetIn(lastTweet)
 
     # # Once tweeted, wait 5 minutes before doing anything else
     time.sleep(300)
