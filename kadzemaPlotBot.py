@@ -128,7 +128,7 @@ def AnalyzeSentiment(target_user, requester):
 
                 
 # create a function that looks for specific mention
-def TweetIn(lastTweet):
+def TweetIn():
 
     # Setup Tweepy API Authentication
     try:
@@ -143,7 +143,7 @@ def TweetIn(lastTweet):
     
     public_tweets = api.search(q, count=10, result_type="recent")
 
-    print("checking tweets since " + str(lastTweet) + "...")
+    # print("checking tweets since " + str(lastTweet) + "...")
 
     # Loop through all public_tweets
     for tweet in public_tweets["statuses"]:
