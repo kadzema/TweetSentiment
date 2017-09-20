@@ -86,8 +86,8 @@ def AnalyzeSentiment(target_user, requester):
 
     plt.style.use('bmh')
 
-    plt.invert_xaxis()
-    # plt.gca().invert_xaxis()
+    # invert the x axis so we see oldest tweets first
+    plt.gca().invert_xaxis()
 
     # removed legend - title is sufficient explaination
     # move the legend outside the frame of the plot
