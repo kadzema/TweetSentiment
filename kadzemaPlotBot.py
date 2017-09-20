@@ -141,7 +141,7 @@ def TweetIn(lastTweet):
     # look for tweets to me
     q = "@kadzema"
     
-    public_tweets = api.search(q, count=10, result_type="recent", since_id=lastTweet)
+    public_tweets = api.search(q, count=10, result_type="recent")
 
     print("checking tweets since " + str(lastTweet) + "...")
 
@@ -166,7 +166,7 @@ def TweetIn(lastTweet):
             if not os.path.isfile(pltName):
                 print("Calling AnalyzeSentiment for " + account)
                 AnalyzeSentiment(account, tweet_author)
-                lastTweet = tweet["id"]
+                # lastTweet = tweet["id"]
             else:
                 # try:
                 #     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
@@ -174,7 +174,7 @@ def TweetIn(lastTweet):
                 # except:
                 print("file found for " + account)
 
-    return lastTweet
+    # return lastTweet
 
             
 
@@ -188,11 +188,12 @@ while(True):
     # look for last person who tweeted a request to me for an analysis
     # capture the lastTweet number in the main code so it is retained
     
-    print("lastTweet before call: " + str(lastTweet))
+    # print("lastTweet before call: " + str(lastTweet))
 
-    lastTweet = TweetIn(lastTweet)
+    # lastTweet = TweetIn(lastTweet)
+    TweetIn()
 
-    print("lastTweet after call: " + str(lastTweet))
+    # print("lastTweet after call: " + str(lastTweet))
 
     # # Once tweeted, wait 5 minutes before doing anything else
     time.sleep(300)
