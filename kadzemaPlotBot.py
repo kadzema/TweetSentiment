@@ -42,7 +42,7 @@ def TweetOut(user, avgSentiment):
         api.update_with_media(graph, user + " - last 100 tweets mean sentiment score: " + str(avgSentiment) )
         print(user + " - last 100 tweets mean sentiment score: " + str(avgSentiment) )
     except:
-        print("graph not found")
+        print("update with media error")
 
 # create a function that analyzes the target user's last 100 tweets
 def AnalyzeSentiment(target_user, requester):
@@ -81,13 +81,13 @@ def AnalyzeSentiment(target_user, requester):
 
     tweetsAgo = np.arange(len(sentiments))
 
-    plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="blue")
+    plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5)
     plt.ylim(-1,1)
 
     plt.style.use('bmh')
 
-
-    plt.gca().invert_xaxis()
+    plt.invert_xaxis()
+    # plt.gca().invert_xaxis()
 
     # removed legend - title is sufficient explaination
     # move the legend outside the frame of the plot
@@ -110,7 +110,9 @@ def AnalyzeSentiment(target_user, requester):
 
     plt.savefig(pltName, bbox_inches="tight", dpit=300)
 
-    plt.show()
+    # plt.show()
+    # close the plot so a new clean one will be created
+    plt.close()
 
     #tweet out the graph
     TweetOut(target_user, avgSentiment)
@@ -156,9 +158,11 @@ def TweetIn():
                 AnalyzeSentiment(account, tweet_author)
                 lastTweet = tweet["id"]
             else:
-                fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-                api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
-                # print("Sorry " + tweet_author + ", " + account + " was analyzed on " + fileDate)
+                try:
+                    fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
+                    api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
+                except:
+                    print("update status error")
 
 ##############################################################################################################################
 
