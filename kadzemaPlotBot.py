@@ -26,7 +26,7 @@ analyzer = SentimentIntensityAnalyzer()
 
 
 # Create a function that tweets
-def TweetOut(user, avgSentiment):
+def TweetOut(user, requester, replyID, avgSentiment):
 
     print("in TweetOut")
 
@@ -38,14 +38,28 @@ def TweetOut(user, avgSentiment):
     # tweet out the graph
     graph = user.replace("@","") + ".png"
 
+    if avgSentiment < -.5:
+        avgDescription = "Yikes! Pretty negative"
+    elif avgSentiment < 0:
+        avgDescription = "Neutral, leans negative."
+    elif avgSentiment == 0:
+        avgDescription = "Completely neutral!"
+    elif avgSentiment < .5:
+        avgDescription = "Neutral, leans positive!"
+    else:
+        avgDescription = "Awesome! That's positive!"
+
+    tweetreply = requester + "! Here's that analysis of " + user + " you requested. /n Mean score: " + str(avgSentiment) + " " + avgDescription
+    print("length of tweet: " + str(len(tweetreply)))
+
     try:
-        api.update_with_media(graph, user + " - last 100 tweets mean sentiment score: " + str(avgSentiment) )
-        print(user + " - last 100 tweets mean sentiment score: " + str(avgSentiment) )
+        # api.update_with_media(graph, tweetreply, replyID )
+        print(tweetreply)
     except:
         print("update with media error")
 
 # create a function that analyzes the target user's last 100 tweets
-def AnalyzeSentiment(target_user, requester):
+def AnalyzeSentiment(target_user, requester, replyID):
 
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
@@ -109,7 +123,7 @@ def AnalyzeSentiment(target_user, requester):
 
     plt.ylabel("Tweet Polarity - Vader Sentiment Analyzer")
     plt.xlabel("Number of Tweets Ago")
-    plt.title("Tweet Analysis for " + target_user + " requested by: " + requester)
+    plt.title("Tweet Analysis (last 100) for " + target_user)
 
     pltName = target_user.replace("@","") + ".png"
 
@@ -124,7 +138,7 @@ def AnalyzeSentiment(target_user, requester):
     plt.clf()
 
     #tweet out the graph
-    TweetOut(target_user, avgSentiment)
+    TweetOut(target_user, requester, replyID, avgSentiment)
 
                 
 # create a function that looks for specific mention
@@ -150,8 +164,10 @@ def TweetIn():
 
         # check the text for the action:
         tweet_text = tweet["text"]
+        print(tweet["text"])
         if ("@kadzema analyze: @" in tweet_text.lower()) and len(tweet_text.split()) == 3:
-            print("Tweet ID requesting analysis: " + str(tweet["id"]))
+            replyID = tweet["id"]
+            print("Tweet ID requesting analysis: " + str(replyID))
 
             # parse out the account to analyze
             tweetSplit = tweet_text.split()
@@ -165,14 +181,14 @@ def TweetIn():
 
             if not os.path.isfile(pltName):
                 print("Calling AnalyzeSentiment for " + account)
-                AnalyzeSentiment(account, tweet_author)
+                AnalyzeSentiment(account, tweet_author, replyID)
                 # lastTweet = tweet["id"]
             else:
                 # try:
                 #     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
                 #     api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
                 # except:
-                print("file found for " + account)
+                print("already analyzed " + account)
 
     # return lastTweet
 
@@ -197,3 +213,4 @@ while(True):
 
     # # Once tweeted, wait 5 minutes before doing anything else
     time.sleep(300)
+    print("another 5 minutes has passed")
