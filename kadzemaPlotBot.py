@@ -104,64 +104,71 @@ def AnalyzeSentiment(target_user, requester, replyID):
 
     tweetsAgo = np.arange(len(sentiments))
 
-     # get the average
-    avgSentiment = round(np.mean(sentiments),2)
+    # make sure there were tweets
+    if len(sentiments) > 0:
 
-    if avgSentiment > 0:
-        avgColor = "green"
-    elif avgSentiment < 0:
-        avgColor = "red"
+        # get the average
+        avgSentiment = round(np.mean(sentiments),2)
+
+        if avgSentiment > 0:
+            avgColor = "green"
+        elif avgSentiment < 0:
+            avgColor = "red"
+        else:
+            avgColor = "blue"
+
+        # set the style before plotting
+        plt.style.use('ggplot')
+
+        # removed legend - title is sufficient explaination
+        # move the legend outside the frame of the plot
+        # plt.legend(bbox_to_anchor=(1, 1))
+        # plt.legend(loc='top left', bbox_to_anchor=(1, 0.5), title="Tweets")
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        handles, labels = ax.get_legend_handles_labels()
+        avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .4)
+        neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .4)
+        plt.legend(handles=[avgPatch, neutralPatch], frameon=True, bbox_to_anchor=(1, 1))
+
+
+        ax.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="b")
+        plt.ylim(-1,1)
+
+        # invert the x axis so we see oldest tweets first
+        plt.gca().invert_xaxis()
+
+        # plot a hortizontal line at neutral (0)
+        plt.axhline(0, c='k', alpha = .4)
+
+        # plot a horizontal line at the average
+        plt.axhline(avgSentiment, c=avgColor, alpha = .4)
+
+    
+        #  - Vader Sentiment Analyzer
+
+        plt.ylabel("Tweet Polarity")
+        plt.xlabel("Number of Tweets Ago")
+        plt.title("Tweet Analysis for " + target_user)
+
+        pltName = target_user.replace("@","") + ".png"
+
+        plt.savefig(pltName, bbox_inches="tight", dpi=300)
+
+        plt.show()
+        # close the plot
+        plt.close()
+        # clear the axis so inverting wil not re-invert!
+        plt.cla()
+        # clear the figure
+        plt.clf()
+
+        #tweet out the graph
+        TweetOut(target_user, requester, replyID, avgSentiment)
+    
     else:
-        avgColor = "blue"
+        api.update_status("Sorry " + tweet_author + ", " + account + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
 
-    # set the style before plotting
-    plt.style.use('ggplot')
-
-    # removed legend - title is sufficient explaination
-    # move the legend outside the frame of the plot
-    # plt.legend(bbox_to_anchor=(1, 1))
-    # plt.legend(loc='top left', bbox_to_anchor=(1, 0.5), title="Tweets")
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-    handles, labels = ax.get_legend_handles_labels()
-    avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .3)
-    neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .3)
-    plt.legend(handles=[avgPatch, neutralPatch], frameon=True, bbox_to_anchor=(1, 1))
-
-
-    ax.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="b")
-    plt.ylim(-1,1)
-
-    # invert the x axis so we see oldest tweets first
-    plt.gca().invert_xaxis()
-
-    # plot a hortizontal line at neutral (0)
-    plt.axhline(0, c='k', alpha = .3)
-
-    # plot a horizontal line at the average
-    plt.axhline(avgSentiment, c=avgColor, alpha = .3)
-
-   
-    #  - Vader Sentiment Analyzer
-
-    plt.ylabel("Tweet Polarity")
-    plt.xlabel("Number of Tweets Ago")
-    plt.title("Tweet Analysis for " + target_user)
-
-    pltName = target_user.replace("@","") + ".png"
-
-    plt.savefig(pltName, bbox_inches="tight", dpi=300)
-
-    plt.show()
-    # close the plot
-    plt.close()
-    # clear the axis so inverting wil not re-invert!
-    plt.cla()
-    # clear the figure
-    plt.clf()
-
-    #tweet out the graph
-    TweetOut(target_user, requester, replyID, avgSentiment)
 
                 
 # create a function that looks for specific mention
