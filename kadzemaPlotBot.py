@@ -58,7 +58,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
          tweetreply = requester + " Here's that analysis of " + user + " you requested!"
 
     try:
-        api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
+        # api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
         print(tweetreply)
     except:
         print("update with media error")
@@ -115,7 +115,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
         avgColor = "blue"
 
     # set the style before plotting
-
+    plt.style.use('ggplot')
 
     # removed legend - title is sufficient explaination
     # move the legend outside the frame of the plot
@@ -124,11 +124,10 @@ def AnalyzeSentiment(target_user, requester, replyID):
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     handles, labels = ax.get_legend_handles_labels()
-    avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .5)
+    avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .3)
     neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .3)
     plt.legend(handles=[avgPatch, neutralPatch], frameon=True, bbox_to_anchor=(1, 1))
 
-    plt.style.use('ggplot')
 
     ax.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="b")
     plt.ylim(-1,1)
@@ -140,7 +139,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
     plt.axhline(0, c='k', alpha = .3)
 
     # plot a horizontal line at the average
-    plt.axhline(avgSentiment, c=avgColor, alpha = .5)
+    plt.axhline(avgSentiment, c=avgColor, alpha = .3)
 
    
     #  - Vader Sentiment Analyzer
@@ -233,8 +232,9 @@ def TweetIn(sinceID):
 
 ##############################################################################################################################
 
-# lastTweet = 910592765976879105
-lastTweet = 0
+lastTweet = 910672009939611649
+
+# lastTweet = 0
 
 # Infinitely loop
 while(True):
