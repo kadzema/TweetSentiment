@@ -44,8 +44,10 @@ def TweetOut(user, requester, replyID, avgSentiment):
         avgDescription = "Neutral, leans negative."
     elif avgSentiment == 0:
         avgDescription = "Completely neutral!"
+    elif avgSentiment < .35:
+        avgDescription = "Neutral, leans positive."
     elif avgSentiment < .5:
-        avgDescription = "Neutral, leans positive!"
+        avgDescription = "Fairly positive!"
     else:
         avgDescription = "Awesome! That's positive!"
 
@@ -53,7 +55,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
     print("length of tweet: " + str(len(tweetreply)))
 
     try:
-        api.update_with_media(graph, tweetreply, replyID )
+        # api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
         print(tweetreply)
     except:
         print("update with media error")
@@ -142,7 +144,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
 
                 
 # create a function that looks for specific mention
-def TweetIn():
+def TweetIn(sinceID):
 
     # Setup Tweepy API Authentication
     try:
@@ -155,9 +157,13 @@ def TweetIn():
     # look for tweets to me
     q = "@kadzema"
     
-    public_tweets = api.search(q, count=10, result_type="recent")
+    public_tweets = api.search(q, count=10, result_type="recent", since_id = sinceID)
 
-    # print("checking tweets since " + str(lastTweet) + "...")
+    print("checking tweets since " + str(lastTweet) + "...")
+    
+    # create lists to see whats going on
+    replyIDs = []
+    requesters = []
 
     # Loop through all public_tweets
     for tweet in public_tweets["statuses"]:
@@ -167,6 +173,9 @@ def TweetIn():
         print(tweet["text"])
         if ("@kadzema analyze: @" in tweet_text.lower()) and len(tweet_text.split()) == 3:
             replyID = tweet["id"]
+
+            replyIDs.append(tweet["id"])
+
             print("Tweet ID requesting analysis: " + str(replyID))
 
             # parse out the account to analyze
@@ -174,6 +183,7 @@ def TweetIn():
             account = tweetSplit[2]
 
             tweet_author = "@" + tweet["user"]["screen_name"]
+            requesters.append(tweet_author)
             # print("Requested by " + tweet_author)
 
             #check that we haven't already analyzed this account by looking for the file
@@ -191,8 +201,14 @@ def TweetIn():
                 print("already analyzed " + account)
 
     # return lastTweet
+    print(replyIDs)
+    print(requesters)
 
-            
+    if len(replyIDs) == 0:
+        print("no new requests")
+        return sinceID
+    else:
+        return max(replyIDs)     
 
 ##############################################################################################################################
 
@@ -204,13 +220,13 @@ while(True):
     # look for last person who tweeted a request to me for an analysis
     # capture the lastTweet number in the main code so it is retained
     
-    # print("lastTweet before call: " + str(lastTweet))
+    print("lastTweet before call: " + str(lastTweet))
 
-    # lastTweet = TweetIn(lastTweet)
-    TweetIn()
+    lastTweet = TweetIn(lastTweet)
+    # TweetIn()
 
-    # print("lastTweet after call: " + str(lastTweet))
+    print("lastTweet after call: " + str(lastTweet))
 
     # # Once tweeted, wait 5 minutes before doing anything else
-    time.sleep(300)
+    time.sleep(5)
     print("another 5 minutes has passed")
