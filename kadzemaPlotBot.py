@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 from matplotlib import collections as matcoll
+import matplotlib.patches as mpatches
 
 
 # Twitter API Keys
@@ -53,6 +54,8 @@ def TweetOut(user, requester, replyID, avgSentiment):
 
     tweetreply = requester + " Here's that analysis of " + user + " you requested! \n Mean score: " + str(avgSentiment) + " " + avgDescription
     print("length of tweet: " + str(len(tweetreply)))
+    if len(tweetreply) > 140:
+         tweetreply = requester + " Here's that analysis of " + user + " you requested!"
 
     try:
         api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
@@ -79,7 +82,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
 
      # loop through 5 times to get 100 tweets
     try:
-        for page in range(1,6):
+        for page in range(1,26):
             targetUser_tweets = api.user_timeline(target_user, page= page)
 
             # Loop through all tweets
@@ -101,39 +104,56 @@ def AnalyzeSentiment(target_user, requester, replyID):
 
     tweetsAgo = np.arange(len(sentiments))
 
+     # get the average
+    avgSentiment = round(np.mean(sentiments),2)
+
+    if avgSentiment > 0:
+        avgColor = "green"
+    elif avgSentiment < 0:
+        avgColor = "red"
+    else:
+        avgColor = "blue"
+
     # set the style before plotting
-    plt.style.use('bmh')
 
-    plt.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5)
-    plt.ylim(-1,1)
-
-
-
-    # invert the x axis so we see oldest tweets first
-    plt.gca().invert_xaxis()
 
     # removed legend - title is sufficient explaination
     # move the legend outside the frame of the plot
     # plt.legend(bbox_to_anchor=(1, 1))
     # plt.legend(loc='top left', bbox_to_anchor=(1, 0.5), title="Tweets")
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    handles, labels = ax.get_legend_handles_labels()
+    avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .5)
+    neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .3)
+    plt.legend(handles=[avgPatch, neutralPatch], frameon=True, bbox_to_anchor=(1, 1))
 
+    plt.style.use('ggplot')
+
+    ax.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="b")
+    plt.ylim(-1,1)
+
+    # invert the x axis so we see oldest tweets first
+    plt.gca().invert_xaxis()
 
     # plot a hortizontal line at neutral (0)
     plt.axhline(0, c='k', alpha = .3)
 
-    # get the average
-    avgSentiment = round(np.mean(sentiments),2)
-    
+    # plot a horizontal line at the average
+    plt.axhline(avgSentiment, c=avgColor, alpha = .5)
 
-    plt.ylabel("Tweet Polarity - Vader Sentiment Analyzer")
+   
+    #  - Vader Sentiment Analyzer
+
+    plt.ylabel("Tweet Polarity")
     plt.xlabel("Number of Tweets Ago")
-    plt.title("Tweet Analysis (last 100) for " + target_user)
+    plt.title("Tweet Analysis for " + target_user)
 
     pltName = target_user.replace("@","") + ".png"
 
-    plt.savefig(pltName, bbox_inches="tight", dpit=300)
+    plt.savefig(pltName, bbox_inches="tight", dpi=300)
 
-    # plt.show()
+    plt.show()
     # close the plot
     plt.close()
     # clear the axis so inverting wil not re-invert!
@@ -196,13 +216,12 @@ def TweetIn(sinceID):
                 AnalyzeSentiment(account, tweet_author, replyID)
                 # lastTweet = tweet["id"]
             else:
-                # try:
-                #     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-                #     api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate)
-                # except:
-                print("already analyzed " + account)
+                try:
+                    fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
+                    api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate, in_reply_to_status_id =replyID)
+                except:
+                    print("already analyzed " + account)
 
-    # return lastTweet
     print(replyIDs)
     print(requesters)
 
@@ -214,6 +233,7 @@ def TweetIn(sinceID):
 
 ##############################################################################################################################
 
+# lastTweet = 910592765976879105
 lastTweet = 0
 
 # Infinitely loop
@@ -222,12 +242,11 @@ while(True):
     # look for last person who tweeted a request to me for an analysis
     # capture the lastTweet number in the main code so it is retained
     
-    print("lastTweet before call: " + str(lastTweet))
+    # print("lastTweet before call: " + str(lastTweet))
 
     lastTweet = TweetIn(lastTweet)
-    # TweetIn()
 
-    print("lastTweet after call: " + str(lastTweet))
+    # print("lastTweet after call: " + str(lastTweet))
 
     # # Once tweeted, wait 5 minutes before doing anything else
     time.sleep(300)
