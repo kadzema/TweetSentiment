@@ -58,7 +58,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
          tweetreply = requester + " Here's that analysis of " + user + " you requested!"
 
     try:
-        # api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
+        api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
         print(tweetreply)
     except:
         print("update with media error")
