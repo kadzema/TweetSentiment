@@ -228,5 +228,5 @@ while(True):
     print("lastTweet after call: " + str(lastTweet))
 
     # # Once tweeted, wait 5 minutes before doing anything else
-    time.sleep(5)
+    time.sleep(300)
     print("another 5 minutes has passed")
