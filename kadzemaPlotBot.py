@@ -167,7 +167,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
         TweetOut(target_user, requester, replyID, avgSentiment)
     
     else:
-        api.update_status("Sorry " + tweet_author + ", " + account + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
+        api.update_status("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
 
 
                 
