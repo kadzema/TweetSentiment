@@ -51,7 +51,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
     else:
         avgDescription = "Awesome! That's positive!"
 
-    tweetreply = requester + "Here's that analysis of " + user + " you requested! \n Mean score: " + str(avgSentiment) + " " + avgDescription
+    tweetreply = requester + " Here's that analysis of " + user + " you requested! \n Mean score: " + str(avgSentiment) + " " + avgDescription
     print("length of tweet: " + str(len(tweetreply)))
 
     try:
