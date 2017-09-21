@@ -63,6 +63,8 @@ def TweetOut(user, requester, replyID, avgSentiment):
 # create a function that analyzes the target user's last 100 tweets
 def AnalyzeSentiment(target_user, requester, replyID):
 
+    print("Analyzing " + target_user + " for " + requester)
+
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
