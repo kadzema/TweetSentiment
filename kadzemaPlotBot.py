@@ -35,7 +35,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
     # Setup Tweepy API Authentication
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+    api = tweepy.API(auth, parser=tweepy.parsers.JSONParser(), wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
 
     # tweet out the graph
     graph = user.replace("@","") + ".png"
@@ -59,7 +59,7 @@ def TweetOut(user, requester, replyID, avgSentiment):
          tweetreply = requester + " Analysis of " + user + " you requested!"
 
     try:
-        # api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
+        api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
         print(tweetreply)
     except:
         print("update with media error")
@@ -72,7 +72,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
-        api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+        api = tweepy.API(auth, parser=tweepy.parsers.JSONParser(), wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
     except:
         print("tweepy authorization issue")
 
@@ -175,6 +175,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
         # plot a horizontal line at the average - no one liked this!
         # plt.axhline(avgSentiment, c=avgColor, alpha = .4)
 
+        # figtext allows you to put text anywhere on the figure
         plt.figtext(0, -.1, "Most Positive Tweet Sentiment: " + posTweetText, wrap=True, fontsize=8, bbox={'pad':2, 'facecolor':'green', 'alpha':.6})
         plt.figtext(0, -.2, "Most Negative Tweet Sentiment: " + negTweetText, wrap=True, fontsize=8, bbox={'pad':2, 'facecolor':'red', 'alpha':.6})
         #  - Vader Sentiment Analyzer
@@ -201,7 +202,7 @@ def AnalyzeSentiment(target_user, requester, replyID):
     else:
         try:
             print("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets")
-            # api.update_status("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
+            api.update_status("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
         except:
             print("no tweet status message error")
 
@@ -213,7 +214,7 @@ def TweetIn(sinceID):
     try:
         auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
         auth.set_access_token(access_token, access_token_secret)
-        api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+        api = tweepy.API(auth, parser=tweepy.parsers.JSONParser(), wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
     except:
         print("tweepy authorization issue")
 
@@ -259,7 +260,7 @@ def TweetIn(sinceID):
             else:
                 try:
                     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-                    # api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate, in_reply_to_status_id =replyID)
+                    api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate, in_reply_to_status_id =replyID)
                 except:
                     print("already analyzed " + account)
 
@@ -277,7 +278,7 @@ def TweetIn(sinceID):
 lastTweet = 911001032448204801
 # 910672009939611649
 
-lastTweet = 0
+# lastTweet = 0
 
 # Infinitely loop
 while(True):
