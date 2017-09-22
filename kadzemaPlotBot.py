@@ -12,6 +12,7 @@ import os
 import numpy as np
 from matplotlib import collections as matcoll
 import matplotlib.patches as mpatches
+import html
 
 
 # Twitter API Keys
@@ -52,13 +53,13 @@ def TweetOut(user, requester, replyID, avgSentiment):
     else:
         avgDescription = "Awesome! That's positive!"
 
-    tweetreply = requester + " Here's that analysis of " + user + " you requested! \n Mean score: " + str(avgSentiment) + " " + avgDescription
+    tweetreply = requester + " Analysis of " + user + "\nMean score: " + str(avgSentiment) + " " + avgDescription
     print("length of tweet: " + str(len(tweetreply)))
     if len(tweetreply) > 140:
-         tweetreply = requester + " Here's that analysis of " + user + " you requested!"
+         tweetreply = requester + " Analysis of " + user + " you requested!"
 
     try:
-        api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
+        # api.update_with_media(graph, tweetreply, in_reply_to_status_id =replyID )
         print(tweetreply)
     except:
         print("update with media error")
@@ -80,7 +81,15 @@ def AnalyzeSentiment(target_user, requester, replyID):
     # remove previous values
     del sentiments[:]
 
-     # loop through 5 times to get 100 tweets
+    # get the highest and lowest scored tweets
+    negTweetScore = 0.0
+    negTweetText = ""
+    negTweetIndex = 0
+    posTweetScore = 0.0
+    posTweetText = ""
+    posTweetIndex = 0
+
+     # loop through 25 times to get 500 tweets
     try:
         for page in range(1,26):
             targetUser_tweets = api.user_timeline(target_user, page= page)
@@ -95,10 +104,21 @@ def AnalyzeSentiment(target_user, requester, replyID):
                 # print(str(index) + " " + tweet["text"])
                 
                 # analyze the tweet text
-                compound = analyzer.polarity_scores(tweet["text"])["compound"]         
-                
+                compound = analyzer.polarity_scores(tweet["text"])["compound"]   
+
                 # add the compound to the sentiment list for plotting
                 sentiments.append(compound)
+
+                if negTweetScore == 0.0 or compound < negTweetScore:
+                    negTweetScore = compound
+                    negTweetText = html.unescape(tweet["text"])
+                    negTweetIndex = len(sentiments) - 1
+
+                if posTweetScore == 0.0 or compound > posTweetScore:
+                    posTweetScore = compound
+                    posTweetText = html.unescape(tweet["text"])
+                    posTweetIndex = len(sentiments) - 1 
+
     except:
         print("error in user timeline loop")
 
@@ -126,13 +146,24 @@ def AnalyzeSentiment(target_user, requester, replyID):
         # plt.legend(loc='top left', bbox_to_anchor=(1, 0.5), title="Tweets")
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-        handles, labels = ax.get_legend_handles_labels()
-        avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .4)
-        neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .4)
-        plt.legend(handles=[avgPatch, neutralPatch], frameon=True, bbox_to_anchor=(1, 1))
 
+        # handles, labels = ax.get_legend_handles_labels()
+        # avgPatch = mpatches.Patch(color=avgColor, label="Mean Score", alpha = .4)
+        # neutralPatch = mpatches.Patch(color="k", label="Neutral Score", alpha = .4)
+        # posTweetPatch = mpatches.Patch(color="green", label="Most Positive Tweet: " + posTweetText, alpha=.4)
+        # negTweetPatch = mpatches.Patch(color="red", label="Most Negative Tweet: " + negTweetText, alpha = .4)
+
+        # plt.legend(handles=[posTweetPatch, negTweetPatch], frameon=True, bbox_to_anchor=(0, 0), loc="center",)
 
         ax.plot(tweetsAgo, sentiments, label=target_user, marker="o", alpha=0.4, linewidth=0.5, color="b")
+
+        print("Pos: " + posTweetText)
+        print("Neg: " + negTweetText)
+
+        # plot the most positive and most negative tweets
+        ax.plot(posTweetIndex, posTweetScore, label=posTweetText, marker="o", alpha=.6, color = "green")
+        ax.plot(negTweetIndex, negTweetScore, label=negTweetText, marker="o", alpha=.6, color="red")
+
         plt.ylim(-1,1)
 
         # invert the x axis so we see oldest tweets first
@@ -141,10 +172,11 @@ def AnalyzeSentiment(target_user, requester, replyID):
         # plot a hortizontal line at neutral (0)
         plt.axhline(0, c='k', alpha = .4)
 
-        # plot a horizontal line at the average
-        plt.axhline(avgSentiment, c=avgColor, alpha = .4)
+        # plot a horizontal line at the average - no one liked this!
+        # plt.axhline(avgSentiment, c=avgColor, alpha = .4)
 
-    
+        plt.figtext(0, -.1, "Most Positive Tweet Sentiment: " + posTweetText, wrap=True, fontsize=8, bbox={'pad':2, 'facecolor':'green', 'alpha':.6})
+        plt.figtext(0, -.2, "Most Negative Tweet Sentiment: " + negTweetText, wrap=True, fontsize=8, bbox={'pad':2, 'facecolor':'red', 'alpha':.6})
         #  - Vader Sentiment Analyzer
 
         plt.ylabel("Tweet Polarity")
@@ -167,8 +199,11 @@ def AnalyzeSentiment(target_user, requester, replyID):
         TweetOut(target_user, requester, replyID, avgSentiment)
     
     else:
-        api.update_status("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
-
+        try:
+            print("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets")
+            # api.update_status("Sorry " + requester + ", " + target_user + " doesn't seem to have any tweets", in_reply_to_status_id =replyID)
+        except:
+            print("no tweet status message error")
 
                 
 # create a function that looks for specific mention
@@ -185,7 +220,7 @@ def TweetIn(sinceID):
     # look for tweets to me
     q = "@kadzema"
     
-    public_tweets = api.search(q, count=10, result_type="recent", since_id = sinceID)
+    public_tweets = api.search(q, count=100, result_type="recent", since_id = sinceID)
 
     print("checking tweets since " + str(lastTweet) + "...")
     
@@ -224,7 +259,7 @@ def TweetIn(sinceID):
             else:
                 try:
                     fileDate = time.strftime('%m-%d-%Y %I:%M:%S %p', time.localtime(os.path.getmtime(pltName)))
-                    api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate, in_reply_to_status_id =replyID)
+                    # api.update_status("Sorry " + tweet_author + ", " + account + " was analyzed " + fileDate, in_reply_to_status_id =replyID)
                 except:
                     print("already analyzed " + account)
 
@@ -239,9 +274,10 @@ def TweetIn(sinceID):
 
 ##############################################################################################################################
 
-lastTweet = 910672009939611649
+lastTweet = 911001032448204801
+# 910672009939611649
 
-# lastTweet = 0
+lastTweet = 0
 
 # Infinitely loop
 while(True):
